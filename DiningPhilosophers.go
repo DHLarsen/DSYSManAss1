@@ -3,8 +3,13 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"sync"
 	"time"
 )
+
+var lock1 sync.Mutex
+
+var lock2 sync.Mutex
 
 var philChans [5]chan bool
 
@@ -16,8 +21,10 @@ func philosopher(i int) {
 	for {
 		delay := rand.Intn(10)
 		time.Sleep(time.Duration(delay) * time.Millisecond)
+
 		rFork := requestFork((i + 1) % 5)
 		lFork := requestFork(i)
+
 		if rFork {
 			fmt.Println("Philosopher ", i, " picked up the right fork")
 		}
@@ -32,6 +39,7 @@ func philosopher(i int) {
 			//time.Sleep(100 * time.Millisecond)
 			fmt.Println("Philosopher ", i, " thinking")
 		}
+		lock1.Lock()
 		if rFork {
 			fmt.Println("Philosopher ", i, " released the right fork")
 			releaseFork((i + 1) % 5)
@@ -40,7 +48,8 @@ func philosopher(i int) {
 			fmt.Println("Philosopher ", i, " released the left fork")
 			releaseFork(i)
 		}
-		time.Sleep(time.Duration(10) * time.Millisecond)
+		time.Sleep(time.Duration(rand.Intn(10)) * time.Millisecond)
+		lock1.Unlock()
 	}
 }
 
