@@ -11,29 +11,36 @@ var philChans [5]chan bool
 var forkChans [5]chan bool // fork chains
 
 func philosopher(i int) {
+	var eats int
 
 	for {
+		delay := rand.Intn(10)
+		time.Sleep(time.Duration(delay) * time.Millisecond)
 		rFork := requestFork((i + 1) % 5)
 		lFork := requestFork(i)
+		if rFork {
+			fmt.Println("Philosopher ", i, " picked up the right fork")
+		}
+		if lFork {
+			fmt.Println("Philosopher ", i, " picked up the left fork")
+		}
 
-		if rFork != lFork {
-			delay := rand.Intn(10)
-			time.Sleep(time.Duration(delay) * time.Millisecond)
-			rFork = requestFork((i + 1) % 5)
-			lFork = requestFork(i)
-		}
 		if rFork && lFork {
-			fmt.Println("Philosopher ", i, " eating")
-			time.Sleep(1 * time.Second)
-		} else {
-			if rFork {
-				releaseFork((i + 1) % 5)
-			}
-			if lFork {
-				releaseFork(i)
-			}
-			time.Sleep(4 * time.Millisecond)
+			eats++
+			fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
+			//time.Sleep(time.Duration(rand.Intn(2)+2) * time.Second) // time it takes for philosopher to eat
+			//time.Sleep(100 * time.Millisecond)
+			fmt.Println("Philosopher ", i, " thinking")
 		}
+		if rFork {
+			fmt.Println("Philosopher ", i, " released the right fork")
+			releaseFork((i + 1) % 5)
+		}
+		if lFork {
+			fmt.Println("Philosopher ", i, " released the left fork")
+			releaseFork(i)
+		}
+		time.Sleep(time.Duration(10) * time.Millisecond)
 	}
 }
 
