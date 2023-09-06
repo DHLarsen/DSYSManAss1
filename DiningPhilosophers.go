@@ -8,7 +8,7 @@ import (
 
 var philChans [5]chan bool
 
-var forkChans [5]chan bool
+var forkChans [5]chan bool // fork chains
 
 func philosopher(i int) {
 
