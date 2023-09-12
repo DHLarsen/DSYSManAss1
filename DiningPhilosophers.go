@@ -10,6 +10,13 @@ var philChans [5]chan bool
 
 var forkChans [5]chan bool // fork chains
 
+/*
+The program can end up in a loop, where the same philosopher keeps picking up the same fork, a specific philosopher never picks up any forks, two philosophers are the only ones eating, or something reminiscent of this
+This happens when print statements are called frequently
+To see the code run practically run forever, comment out the active print statements, and use the commented out % print statement in philosopher
+With this print statement, we have tested our code with over 30.000 eats per philosopher
+*/
+
 func philosopher(i int) {
 	var eats int
 
@@ -20,26 +27,21 @@ func philosopher(i int) {
 		rFork := requestFork((i + 1) % 5)
 		lFork := requestFork(i)
 
-		if rFork {
-			fmt.Println("Philosopher ", i, " picked up the right fork")
-		}
-		if lFork {
-			fmt.Println("Philosopher ", i, " picked up the left fork")
-		}
-
 		if rFork && lFork {
 			eats++
 			fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
-			//time.Sleep(time.Duration(rand.Intn(2)+2) * time.Second) // time it takes for philosopher to eat
-			//time.Sleep(100 * time.Millisecond)
+			/*
+				if eats%100 == 0 { // use this instead of the other print statements to see the code run practically forever
+					fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
+				}
+			*/
+			time.Sleep(time.Duration(rand.Intn(2)+2) * time.Millisecond) // time it takes for philosopher to eat
 			fmt.Println("Philosopher ", i, " thinking")
 		}
 		if rFork {
-			fmt.Println("Philosopher ", i, " released the right fork")
 			releaseFork((i + 1) % 5)
 		}
 		if lFork {
-			fmt.Println("Philosopher ", i, " released the left fork")
 			releaseFork(i)
 		}
 		time.Sleep(time.Duration(rand.Intn(10)+2) * time.Millisecond)
