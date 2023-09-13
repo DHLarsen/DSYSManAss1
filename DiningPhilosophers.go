@@ -19,6 +19,7 @@ Our code does not deadlock, since philosophers no matter what release their fork
 Random delays ensure no sequencialisation
 We also seperated fork channels into input and output to protect against race conditions
 (we used to have only one channel per fork, and then race conditions could cause channels to deadlock)
+Our code is tested sucessfully with over 600.000 eats per philosopher
 */
 
 func philosopher(i int) {
