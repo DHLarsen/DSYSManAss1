@@ -29,14 +29,14 @@ func philosopher(i int) {
 
 		if rFork && lFork {
 			eats++
-			fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
-			/*
-				if eats%100 == 0 { // use this instead of the other print statements to see the code run practically forever
-					fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
-				}
-			*/
+			//fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
+
+			if eats%100 == 0 { // use this instead of the other print statements to see the code run practically forever
+				fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
+			}
+
 			time.Sleep(time.Duration(rand.Intn(2)+2) * time.Millisecond) // time it takes for philosopher to eat
-			fmt.Println("Philosopher ", i, " thinking")
+			//fmt.Println("Philosopher ", i, " thinking")
 		}
 		if rFork {
 			releaseFork((i + 1) % 5)
