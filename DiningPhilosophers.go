@@ -8,20 +8,24 @@ import (
 
 var philChans [5]chan bool
 
-var forkChans [5]chan bool // fork chains
+var forkChansIn [5]chan bool // fork chains
+
+var forkChansOut [5]chan bool // fork chains
 
 /*
-The program can end up in a loop, where the same philosopher keeps picking up the same fork, a specific philosopher never picks up any forks, two philosophers are the only ones eating, or something reminiscent of this
-This happens when print statements are called frequently
-To see the code run practically run forever, comment out the active print statements, and use the commented out % print statement in philosopher
-With this print statement, we have tested our code with over 30.000 eats per philosopher
+Code written by tpep, dhla and habr
+
+Our code does not deadlock, since philosophers no matter what release their forks after a random delay
+Random delays ensure no sequencialisation
+We also seperated fork channels into input and output to protect against race conditions
+(we used to have only one channel per fork, and then race conditions could cause channels to deadlock)
 */
 
 func philosopher(i int) {
 	var eats int
 
 	for {
-		delay := rand.Intn(10) + 2
+		delay := rand.Intn(2) + 1
 		time.Sleep(time.Duration(delay) * time.Millisecond)
 
 		rFork := requestFork((i + 1) % 5)
@@ -29,14 +33,10 @@ func philosopher(i int) {
 
 		if rFork && lFork {
 			eats++
-			//fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
+			fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
 
-			if eats%100 == 0 { // use this instead of the other print statements to see the code run practically forever
-				fmt.Println("Philosopher ", i, " eating. Total eats: ", eats)
-			}
-
-			time.Sleep(time.Duration(rand.Intn(2)+2) * time.Millisecond) // time it takes for philosopher to eat
-			//fmt.Println("Philosopher ", i, " thinking")
+			time.Sleep(time.Duration(rand.Intn(5)+5) * time.Millisecond) // time it takes for philosopher to eat
+			fmt.Println("Philosopher ", i, " thinking")
 		}
 		if rFork {
 			releaseFork((i + 1) % 5)
@@ -44,29 +44,28 @@ func philosopher(i int) {
 		if lFork {
 			releaseFork(i)
 		}
-		time.Sleep(time.Duration(rand.Intn(10)+2) * time.Millisecond)
 	}
 }
 
 func requestFork(i int) bool {
-	forkChans[i] <- true
-	return <-forkChans[i]
+	forkChansIn[i] <- true
+	return <-forkChansOut[i]
 }
 
 func releaseFork(i int) {
-	forkChans[i] <- false
+	forkChansIn[i] <- false
 }
 
 func fork(i int) {
 	var inUse = false
 
 	for {
-		if <-forkChans[i] { //requesting forks
+		if <-forkChansIn[i] { //requesting forks
 			if inUse {
-				forkChans[i] <- false
+				forkChansOut[i] <- false
 			} else {
 				inUse = true
-				forkChans[i] <- true
+				forkChansOut[i] <- true
 			}
 		} else { //releasing forks
 			inUse = false
@@ -78,7 +77,8 @@ func main() {
 	// Creates 5 philosophers, 5 forks and channels for the right and the left fork
 	for i := 0; i < 5; i++ {
 		philChans[i] = make(chan bool)
-		forkChans[i] = make(chan bool)
+		forkChansIn[i] = make(chan bool)
+		forkChansOut[i] = make(chan bool)
 		go fork(i)
 		go philosopher(i)
 	}
